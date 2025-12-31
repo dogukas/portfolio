@@ -1,0 +1,258 @@
+---
+import ParticlesBackground from './ParticlesBackground.astro';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+<section class="min-h-screen flex items-center justify-center py-20 lg:py-32 relative overflow-hidden">
+  <ParticlesBackground color="#3b82f6" particleCount={60} />
+  <div class="container mx-auto px-4 relative z-10">
+    <div class="flex flex-col lg:flex-row items-center gap-16">
+      <!-- Sol Kısım: Metin ve Butonlar -->
+      <div class="flex-1 text-center lg:text-left space-y-8" data-aos="fade-up" data-aos-duration="1000">
+        <div class="space-y-4">
+          <span class="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm">
+            {t('hero.welcome')}
+          </span>
+          <h1 class="text-5xl lg:text-7xl font-bold tracking-tight">
+            {t('hero.greeting')}
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70 leading-relaxed">
+              Doğukan Tevfik Sağıroğlu
+            </span>
+          </h1>
+          <p class="text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl">
+            {t('hero.role')}
+          </p>
+        </div>
+
+        <!-- Butonlar -->
+        <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
+          <a
+            href={`/${lang}/#contact`}
+            class="group relative px-8 py-4 bg-primary text-white rounded-full overflow-hidden shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all duration-300"
+          >
+            <span class="relative z-10">{t('hero.contact')}</span>
+            <div class="absolute inset-0 bg-gradient-to-r from-primary-dark to-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+          </a>
+          <a
+            href={`/${lang}/#projects`}
+            class="group px-8 py-4 border-2 border-primary text-primary rounded-full hover:bg-primary/5 transition-all duration-300"
+          >
+            <span class="relative z-10">{t('hero.projects')}</span>
+          </a>
+          <a
+            href="/cv.pdf"
+            download="Dogukan_Sagiroglu_CV.pdf"
+            class="group relative px-8 py-4 bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-700 dark:to-gray-800 text-white rounded-full overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center gap-2"
+          >
+            <svg class="w-5 h-5 transform group-hover:translate-y-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span class="relative z-10">{t('hero.download_cv')}</span>
+            <div class="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+          </a>
+        </div>
+
+        <!-- Sosyal Medya -->
+        <div class="flex gap-6 justify-center lg:justify-start pt-8">
+          <a href="https://github.com" target="_blank" class="social-icon-link">
+            <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-300">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </a>
+          <a href="https://linkedin.com" target="_blank" class="social-icon-link">
+            <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-300">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+              </svg>
+            </div>
+          </a>
+          <a href="https://twitter.com" target="_blank" class="social-icon-link">
+            <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-300">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Sağ Kısım: Modern 3D Profil Alanı -->
+      <div class="flex-1 relative perspective-3d" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
+        <div class="relative w-80 h-80 lg:w-[500px] lg:h-[500px] mx-auto transform-3d group">
+          <!-- Ana Görsel Katmanı -->
+          <div class="absolute inset-0">
+            <!-- Merkez Logo Alanı -->
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 lg:w-96 lg:h-96">
+              <!-- Logo Container -->
+              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 lg:w-60 lg:h-60 transform group-hover:scale-110 transition-transform duration-700">
+                <img 
+                  src="/logo.png" 
+                  alt="Logo" 
+                  class="w-full h-full object-contain relative z-10"
+                />
+              </div>
+
+              <!-- Dönen Halkalar -->
+              <div class="absolute inset-0 animate-spin-slow">
+                <div class="absolute inset-0 border-4 border-t-primary border-r-primary border-b-transparent border-l-transparent rounded-full"></div>
+              </div>
+              <div class="absolute inset-4 animate-spin-reverse">
+                <div class="absolute inset-0 border-4 border-b-blue-500 border-l-blue-500 border-t-transparent border-r-transparent rounded-full"></div>
+              </div>
+              <div class="absolute inset-8 animate-spin-slow-2">
+                <div class="absolute inset-0 border-4 border-t-purple-500 border-r-purple-500 border-b-transparent border-l-transparent rounded-full"></div>
+              </div>
+
+              <!-- Gradient Sphere -->
+              <div class="absolute inset-16 bg-gradient-to-br from-primary/20 via-blue-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse-slow"></div>
+            </div>
+
+            <!-- Floating Particles -->
+            <div class="absolute inset-0">
+              {Array(6).fill('').map((_, i) => (
+                <div class={`particle-${i + 1} absolute w-2 h-2 bg-gradient-to-br from-primary to-blue-500 rounded-full`}></div>
+              ))}
+            </div>
+
+            <!-- Dekoratif Çizgiler -->
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-full h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent transform -rotate-45"></div>
+              <div class="w-full h-[2px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent transform rotate-45"></div>
+            </div>
+
+            <!-- Gradient Orbs -->
+            <div class="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4">
+              <div class="w-32 h-32 bg-gradient-to-br from-primary/40 to-purple-500/40 rounded-full blur-xl animate-float"></div>
+            </div>
+            <div class="absolute bottom-0 left-0 transform -translate-x-1/4 translate-y-1/4">
+              <div class="w-40 h-40 bg-gradient-to-br from-blue-500/40 to-primary/40 rounded-full blur-xl animate-float-reverse"></div>
+            </div>
+          </div>
+
+          <!-- Hover Efekt Katmanı -->
+          <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-sm rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .social-icon-link {
+    @apply text-gray-600 dark:text-gray-400;
+  }
+
+  .perspective-3d {
+    perspective: 2000px;
+  }
+
+  .transform-3d {
+    transform-style: preserve-3d;
+  }
+
+  @keyframes spin-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes spin-reverse {
+    0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  @keyframes spin-slow-2 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-20px) scale(1.05);
+    }
+  }
+
+  @keyframes float-reverse {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(20px) scale(1.05);
+    }
+  }
+
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+
+  .animate-spin-reverse {
+    animation: spin-reverse 15s linear infinite;
+  }
+
+  .animate-spin-slow-2 {
+    animation: spin-slow-2 25s linear infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-reverse {
+    animation: float-reverse 7s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+  }
+
+  /* Particle Animations */
+  .particle-5 { top: 30%; left: 70%; animation: float 11s infinite; }
+  .particle-6 { top: 70%; left: 30%; animation: float-reverse 8s infinite; }
+</style>
+
+<script>
+  // Mouse Tracking 3D Tilt Effect
+  const container = document.querySelector('.perspective-3d');
+  const card = document.querySelector('.transform-3d');
+
+  if (container && card) {
+    container.addEventListener('mousemove', (e) => {
+      const event = e as MouseEvent;
+      const { clientWidth, clientHeight } = container;
+      const { left, top } = container.getBoundingClientRect();
+      const x = event.clientX - left;
+      const y = event.clientY - top;
+
+      const xAxis = (clientWidth / 2 - x) / 25;
+      const yAxis = (clientHeight / 2 - y) / 25;
+
+      (card as HTMLElement).style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+    });
+
+    container.addEventListener('mouseleave', () => {
+      (card as HTMLElement).style.transform = 'rotateY(0deg) rotateX(0deg)';
+      (card as HTMLElement).style.transition = 'transform 0.5s ease';
+    });
+
+    container.addEventListener('mouseenter', () => {
+      (card as HTMLElement).style.transition = 'none';
+    });
+  }
+</script>

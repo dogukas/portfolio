@@ -1,0 +1,153 @@
+---
+---
+<!-- Konami Code Easter Egg Component -->
+<div id="konami-overlay" class="fixed inset-0 pointer-events-none z-[9999] hidden">
+  <canvas id="konami-canvas" class="w-full h-full"></canvas>
+</div>
+
+<script>
+  // Konami Code Sequence: ↑ ↑ ↓ ↓ ← → ← → B A
+  const konamiCode = [
+    'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+    'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
+    'b', 'a'
+  ];
+  let cursor = 0;
+  let isCelebrating = false;
+
+  const overlay = document.getElementById('konami-overlay');
+  const canvas = document.getElementById('konami-canvas') as HTMLCanvasElement;
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx) {
+    // Resize canvas
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Particle System
+    class Particle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      alpha: number;
+      color: string;
+
+      constructor(x: number, y: number, color: string) {
+        this.x = x;
+        this.y = y;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 2;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.alpha = 1;
+        this.color = color;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.05; // Gravity
+        this.alpha -= 0.02; // Fade out
+      }
+
+      draw() {
+        if (!ctx) return;
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    let particles: Particle[] = [];
+
+    const createExplosion = (x: number, y: number) => {
+      const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      for (let i = 0; i < 50; i++) {
+        particles.push(new Particle(x, y, color));
+      }
+    };
+
+    const animate = () => {
+      if (!isCelebrating && particles.length === 0) return;
+
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Chance to spawn new explosion
+      if (isCelebrating && Math.random() < 0.05) {
+        createExplosion(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height * 0.5
+        );
+      }
+
+      particles.forEach((p, index) => {
+        p.update();
+        p.draw();
+        if (p.alpha <= 0) {
+          particles.splice(index, 1);
+        }
+      });
+
+      requestAnimationFrame(animate);
+    };
+
+    // Listen for code
+    document.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === konamiCode[cursor].toLowerCase()) {
+        cursor++;
+        if (cursor === konamiCode.length) {
+          startCelebration();
+          cursor = 0;
+        }
+      } else {
+        cursor = 0;
+        // Check if the current key is the start of the sequence
+        // (Allows restart mid-typing error)
+        if (e.key.toLowerCase() === konamiCode[0].toLowerCase()) {
+            cursor = 1;
+        }
+      }
+    });
+
+    function startCelebration() {
+      if (isCelebrating) return;
+      isCelebrating = true;
+      overlay?.classList.remove('hidden');
+      
+      console.log('🎮 KONAMI CODE ACTIVATED! 🎮');
+      
+      // Simple Sound (Optional beep)
+      // Play a success sound
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
+      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.5);
+
+      animate();
+
+      // Stop after 5 seconds
+      setTimeout(() => {
+        isCelebrating = false;
+        setTimeout(() => {
+            if (particles.length === 0) overlay?.classList.add('hidden');
+        }, 2000); // Give time for last particles to fade
+      }, 5000);
+    }
+  }
+</script>

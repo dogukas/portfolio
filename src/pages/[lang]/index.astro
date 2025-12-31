@@ -1,0 +1,46 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Hero from '../../components/Hero.astro';
+import About from '../../components/About.astro';
+import Experience from '../../components/Experience.astro';
+import Skills from '../../components/Skills.astro';
+import Projects from '../../components/Projects.astro';
+import Contact from '../../components/Contact.astro';
+import Navbar from '../../components/Navbar.astro';
+import Testimonials from '../../components/Testimonials.astro';
+import GitHubStats from '../../components/GitHubStats.astro';
+import Terminal from '../../components/Terminal.astro';
+import SpotifyWidget from '../../components/SpotifyWidget.astro';
+import SkillGraph from '../../components/SkillGraph.astro';
+import { languages } from '../../i18n/ui';
+import { useTranslations } from '../../i18n/utils';
+
+export function getStaticPaths() {
+  return Object.keys(languages).map((lang) => {
+    return { params: { lang } };
+  });
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang as any);
+---
+
+<Layout title="DGKNSGR - Full Stack Developer" description="Professional portfolio and resume" lang={lang}>
+	<Navbar />
+	<main class="container mx-auto px-4 py-8">
+		<Hero />
+		<About />
+		<Experience />
+		<Skills />
+		<div data-aos="fade-up" class="mb-20">
+			<h3 class="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">{t('skills.network')}</h3>
+			<SkillGraph />
+		</div>
+		<GitHubStats />
+		<Terminal />
+		<Projects />
+		<Testimonials />
+		<SpotifyWidget />
+		<Contact />
+	</main>
+</Layout>

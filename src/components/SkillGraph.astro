@@ -1,0 +1,259 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+<div class="w-full h-[500px] relative bg-gray-50 dark:bg-gray-800/50 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-lg">
+  <div class="absolute top-4 left-4 z-10 bg-white/80 dark:bg-gray-900/80 px-3 py-1 rounded-lg text-xs font-mono border border-gray-200 dark:border-gray-700">
+    {t('skills.graph_help')}
+  </div>
+  <canvas id="skill-graph-canvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+</div>
+
+<script>
+  // Simple Force-Directed Graph Implementation in Vanilla JS
+  const canvas = document.getElementById('skill-graph-canvas') as HTMLCanvasElement;
+  const container = canvas?.parentElement;
+
+  if (canvas && container) {
+    const ctx = canvas.getContext('2d');
+    
+    // Skills Data
+    const nodes = [
+      // Frontend
+      { id: 'Frontend', group: 1, radius: 25 },
+      { id: 'React', group: 2, radius: 18 },
+      { id: 'Vue', group: 2, radius: 18 },
+      { id: 'Astro', group: 2, radius: 18 },
+      { id: 'Tailwind', group: 2, radius: 15 },
+      { id: 'TypeScript', group: 2, radius: 15 },
+      // Backend
+      { id: 'Backend', group: 3, radius: 25 },
+      { id: 'Node.js', group: 4, radius: 18 },
+      { id: 'Python', group: 4, radius: 18 },
+      { id: 'PostgreSQL', group: 4, radius: 15 },
+      { id: 'MongoDB', group: 4, radius: 15 },
+      // DevOps
+      { id: 'DevOps', group: 5, radius: 25 },
+      { id: 'Docker', group: 6, radius: 18 },
+      { id: 'AWS', group: 6, radius: 18 },
+      { id: 'Linux', group: 6, radius: 15 }
+    ];
+
+    const links = [
+      { source: 'Frontend', target: 'React' },
+      { source: 'Frontend', target: 'Vue' },
+      { source: 'Frontend', target: 'Astro' },
+      { source: 'Frontend', target: 'Tailwind' },
+      { source: 'Frontend', target: 'TypeScript' },
+      
+      { source: 'Backend', target: 'Node.js' },
+      { source: 'Backend', target: 'Python' },
+      { source: 'Backend', target: 'PostgreSQL' },
+      { source: 'Backend', target: 'MongoDB' },
+      
+      { source: 'DevOps', target: 'Docker' },
+      { source: 'DevOps', target: 'AWS' },
+      { source: 'DevOps', target: 'Linux' },
+
+      // Cross links
+      { source: 'React', target: 'TypeScript' },
+      { source: 'Node.js', target: 'TypeScript' },
+      { source: 'Node.js', target: 'MongoDB' },
+      { source: 'Node.js', target: 'Docker' },
+      { source: 'Python', target: 'Linux' }
+    ];
+
+    // Colors
+    const colors: Record<number, string> = {
+      1: '#3b82f6', // Blue
+      2: '#60a5fa', // Light Blue
+      3: '#10b981', // Green
+      4: '#34d399', // Light Green
+      5: '#8b5cf6', // Purple
+      6: '#a78bfa'  // Light Purple
+    };
+
+    // Physics State
+    let width = container.clientWidth;
+    let height = container.clientHeight;
+    
+    // Initialize positions randomly near center
+    nodes.forEach(node => {
+        (node as any).x = width / 2 + (Math.random() - 0.5) * 50;
+        (node as any).y = height / 2 + (Math.random() - 0.5) * 50;
+        (node as any).vx = 0;
+        (node as any).vy = 0;
+    });
+
+    // Simulation Parameters
+    const repulsion = 1000;
+    const springLength = 100;
+    const springStrength = 0.05;
+    const damping = 0.9;
+    const centerStrength = 0.01;
+
+    let draggedNode: any = null;
+    let animationId: number;
+
+    const resize = () => {
+        width = container.clientWidth;
+        height = container.clientHeight;
+        canvas.width = width;
+        canvas.height = height;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Interaction
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Find clicked node
+        for (const node of nodes) {
+            const dx = x - (node as any).x;
+            const dy = y - (node as any).y;
+            if (dx * dx + dy * dy < node.radius * node.radius) {
+                draggedNode = node;
+                break;
+            }
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (draggedNode) {
+            const rect = canvas.getBoundingClientRect();
+            draggedNode.x = e.clientX - rect.left;
+            draggedNode.y = e.clientY - rect.top;
+            draggedNode.vx = 0;
+            draggedNode.vy = 0;
+        }
+    });
+
+    window.addEventListener('mouseup', () => {
+        draggedNode = null;
+    });
+
+    const update = () => {
+        // Link attraction
+        links.forEach(link => {
+            const source = nodes.find(n => n.id === link.source) as any;
+            const target = nodes.find(n => n.id === link.target) as any;
+            if (!source || !target) return;
+
+            const dx = target.x - source.x;
+            const dy = target.y - source.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance === 0) return;
+
+            const force = (distance - springLength) * springStrength;
+            const fx = (dx / distance) * force;
+            const fy = (dy / distance) * force;
+
+            if (source !== draggedNode) {
+                source.vx += fx;
+                source.vy += fy;
+            }
+            if (target !== draggedNode) {
+                target.vx -= fx;
+                target.vy -= fy;
+            }
+        });
+
+        // Node repulsion
+        nodes.forEach((node1: any, i) => {
+            nodes.forEach((node2: any, j) => {
+                if (i === j) return;
+                
+                const dx = node2.x - node1.x;
+                const dy = node2.y - node1.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance === 0) {
+                    distance = 0.1; // Avoid division by zero
+                }
+
+                if (distance < 200) { // Only repel if close
+                    const force = repulsion / (distance * distance);
+                    const fx = (dx / distance) * force;
+                    const fy = (dy / distance) * force;
+
+                    if (node1 !== draggedNode) {
+                        node1.vx -= fx;
+                        node1.vy -= fy;
+                    }
+                    // Current loop handles both directions eventually
+                }
+            });
+            
+            // Center gravity
+            if (node1 !== draggedNode) {
+                node1.vx += (width / 2 - node1.x) * centerStrength;
+                node1.vy += (height / 2 - node1.y) * centerStrength;
+            }
+        });
+
+        // Apply Velocity
+        nodes.forEach((node: any) => {
+            if (node !== draggedNode) {
+                node.x += node.vx;
+                node.y += node.vy;
+                node.vx *= damping;
+                node.vy *= damping;
+            }
+        });
+    };
+
+    const draw = () => {
+        if (!ctx) return;
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw Links
+        ctx.strokeStyle = localStorage.getItem('theme') === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+        ctx.lineWidth = 1;
+
+        links.forEach(link => {
+            const source = nodes.find(n => n.id === link.source) as any;
+            const target = nodes.find(n => n.id === link.target) as any;
+            if (source && target) {
+                ctx.beginPath();
+                ctx.moveTo(source.x, source.y);
+                ctx.lineTo(target.x, target.y);
+                ctx.stroke();
+            }
+        });
+
+        // Draw Nodes
+        nodes.forEach((node: any) => {
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+            ctx.fillStyle = colors[node.group] || '#9ca3af';
+            ctx.fill();
+            
+            // Border
+            ctx.strokeStyle = localStorage.getItem('theme') === 'dark' ? '#1f2937' : '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Label
+            ctx.fillStyle = localStorage.getItem('theme') === 'dark' ? '#fff' : '#1f2937';
+            ctx.font = `500 ${node.radius > 20 ? '14px' : '12px'} Inter`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(node.id, node.x, node.y);
+        });
+    };
+
+    const loop = () => {
+        update();
+        draw();
+        animationId = requestAnimationFrame(loop);
+    };
+
+    loop();
+  }
+</script>

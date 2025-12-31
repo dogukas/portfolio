@@ -1,0 +1,119 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+import '../styles/global.css';
+import 'aos/dist/aos.css';
+import Loading from '../components/Loading.astro';
+
+import KonamiCode from '../components/KonamiCode.astro';
+
+interface Props {
+	title: string;
+	description?: string;
+    lang?: string;
+}
+
+const { 
+	title = "Profesyonel Özgeçmiş",
+	description = "Kişisel portföy ve özgeçmiş websitesi",
+    lang = "tr"
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang={lang} class="scroll-smooth">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/png" href="/logo.png" />
+		<link rel="apple-touch-icon" sizes="300x300" href="/logo.png" />
+		<link rel="icon" type="image/png" sizes="300x300" href="/logo.png" />
+		<link rel="icon" type="image/png" sizes="300x300" href="/logo.png" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<title>{title}</title>
+		<ViewTransitions />
+		<script is:inline>
+			// Sayfa yüklendiğinde tema durumunu kontrol et
+			if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+				document.documentElement.classList.add('dark');
+			} else {
+				document.documentElement.classList.remove('dark');
+			}
+		</script>
+	</head>
+	<body class="min-h-screen bg-white dark:bg-dark-bg text-gray-900 dark:text-gray-100">
+		<Loading />
+		<KonamiCode />
+		<slot />
+		<script>
+			import AOS from 'aos';
+			AOS.init({
+				duration: 800,
+				once: true,
+			});
+		</script>
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--accent: 136, 58, 234;
+		--accent-light: 224, 204, 250;
+		--accent-dark: 49, 10, 101;
+		--accent-gradient: linear-gradient(45deg, rgb(var(--accent)), rgb(var(--accent-light)) 30%, white 60%);
+	}
+	
+	html {
+		font-family: 'Inter', system-ui, sans-serif;
+		background: #f6f6f6;
+	}
+
+	/* Smooth dark mode transitions */
+	html.dark {
+		color-scheme: dark;
+	}
+
+	/* Tema geçiş animasyonları */
+	html {
+		transition: background-color 0.5s ease-in-out;
+	}
+
+	body,
+	nav,
+	header,
+	main,
+	footer,
+	section,
+	div,
+	article {
+		transition: 
+			background-color 0.5s ease-in-out,
+			border-color 0.5s ease-in-out,
+			color 0.3s ease-in-out,
+			box-shadow 0.5s ease-in-out,
+			transform 0.3s ease-in-out,
+			opacity 0.3s ease-in-out;
+	}
+
+	/* Tema değiştirme animasyonu */
+	.theme-transition {
+		animation: theme-fade 0.5s ease-in-out;
+	}
+
+	@keyframes theme-fade {
+		0% {
+			opacity: 0.5;
+			transform: scale(0.98);
+		}
+		100% {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	/* Smooth scrolling */
+	html {
+		scroll-behavior: smooth;
+	}
+</style>

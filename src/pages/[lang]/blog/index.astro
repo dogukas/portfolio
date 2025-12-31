@@ -1,0 +1,46 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import Contact from '../../components/Contact.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Layout title="Blog | DGKNSGR" description="Yazılım, teknoloji ve deneyimlerim üzerine blog yazıları.">
+<Layout title={`${t('blog.title')} - Dogukan Sagiroglu`}>
+  <div class="pt-24 pb-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto px-4">
+      <!-- Header -->
+      <div class="text-center mb-16" data-aos="fade-up">
+        <h1 class="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+          {t('blog.title')}
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
+          {t('blog.desc')}
+        </p>
+      </div>
+
+      <!-- Blog Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {posts.map((post) => (
+          <div data-aos="fade-up">
+            <BlogCard
+              title={post.data.title}
+              description={post.data.description}
+              pubDate={post.data.pubDate}
+              author={post.data.author}
+              image={post.data.image}
+              tags={post.data.tags}
+              url={`/${lang}/blog/${post.slug}`}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>
+```

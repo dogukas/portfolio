@@ -1,0 +1,143 @@
+---
+interface Props {
+  color?: string;
+  particleCount?: number;
+}
+
+const { color = "#2563eb", particleCount = 50 } = Astro.props;
+---
+
+<div id="particles-container" class="absolute inset-0 pointer-events-none overflow-hidden z-0">
+  <canvas id="particles-canvas" class="w-full h-full"></canvas>
+</div>
+
+<script define:vars={{ color, particleCount }}>
+  const container = document.getElementById('particles-container');
+  const canvas = document.getElementById('particles-canvas');
+  if (canvas && container) {
+    const ctx = canvas.getContext('2d');
+    
+    let particles = [];
+    let animationId;
+    let mouse = { x: null, y: null, radius: 150 };
+
+    const resize = () => {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+      init();
+    };
+
+    window.addEventListener('resize', resize);
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    });
+    
+    container.addEventListener('mouseleave', () => {
+        mouse.x = null;
+        mouse.y = null;
+    });
+
+    class Particle {
+      constructor(x, y, dx, dy, size, color) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
+        this.size = size;
+        this.color = color;
+        this.baseX = x;
+        this.baseY = y;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+
+      update() {
+        // Simple linear movement
+        this.x += this.dx;
+        this.y += this.dy;
+
+        // Bounce off walls
+        if (this.x < 0 || this.x > canvas.width) this.dx = -this.dx;
+        if (this.y < 0 || this.y > canvas.height) this.dy = -this.dy;
+
+        // Mouse interaction
+        if (mouse.x != null) {
+            let dx = mouse.x - this.x;
+            let dy = mouse.y - this.y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < mouse.radius) {
+                const forceDirectionX = dx / distance;
+                const forceDirectionY = dy / distance;
+                const force = (mouse.radius - distance) / mouse.radius;
+                const directionX = forceDirectionX * force * 5; // Repulsion strength
+                const directionY = forceDirectionY * force * 5;
+                
+                this.x -= directionX;
+                this.y -= directionY;
+            } else {
+                // Return to original path (simplified)
+            }
+        }
+        
+        this.draw();
+      }
+    }
+
+    function init() {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        let size = (Math.random() * 2) + 1;
+        let x = Math.random() * (canvas.width - size * 2) + size * 2;
+        let y = Math.random() * (canvas.height - size * 2) + size * 2;
+        let dx = (Math.random() * 1) - 0.5;
+        let dy = (Math.random() * 1) - 0.5;
+        particles.push(new Particle(x, y, dx, dy, size, color));
+      }
+    }
+
+    function connect() {
+      let opacityValue = 1;
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+          let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) +
+                         ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
+          if (distance < (canvas.width/7) * (canvas.height/7)) {
+            opacityValue = 1 - (distance / 15000);
+            if(opacityValue > 0) {
+                ctx.strokeStyle = color + Math.floor(opacityValue * 255).toString(16).padStart(2, '0');
+                // Fallback for color string manipulation: just use globalAlpha
+                ctx.globalAlpha = opacityValue;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(particles[a].x, particles[a].y);
+                ctx.lineTo(particles[b].x, particles[b].y);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+          }
+        }
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+      }
+      connect();
+    }
+
+    resize();
+    animate();
+  }
+</script>
