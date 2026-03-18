@@ -1,4 +1,3 @@
-```
 ---
 import Layout from '../../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
@@ -8,7 +7,7 @@ export async function getStaticPaths() {
   const posts = await getCollection('blog');
   
   // Tüm postları tüm diller için oluştur
-  const paths = [];
+  const paths: any[] = [];
   ['tr', 'de'].forEach(lang => {
     posts.forEach(post => {
       paths.push({
@@ -43,7 +42,7 @@ const dateLocale = lang === 'tr' ? 'tr-TR' : 'de-DE';
       <div class="absolute bottom-0 left-0 w-full z-20 p-4 md:p-8 lg:p-12">
         <div class="container mx-auto max-w-4xl">
           <div class="flex gap-2 mb-4">
-            {post.data.tags.map(tag => (
+            {post.data.tags.map((tag: string) => (
               <span class="px-3 py-1 bg-primary text-white text-sm rounded-full font-medium shadow-lg">
                 {tag}
               </span>
@@ -88,5 +87,4 @@ const dateLocale = lang === 'tr' ? 'tr-TR' : 'de-DE';
       </div>
     </div>
   </article>
-</Layout>  
-```
+</Layout>

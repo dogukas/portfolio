@@ -1,0 +1,145 @@
+---
+// ThreeHeroScene.astro
+// Bu component Three.js kullanarak ana sayfadaki Hero bölümüne interaktif bir 3D obje ekler.
+---
+
+<div id="three-hero-container" class="w-full h-full relative cursor-move"></div>
+
+<script>
+  import * as THREE from 'three';
+
+  function initThree() {
+    const container = document.getElementById('three-hero-container');
+    if (!container) return;
+
+    // Sahne, Kamera, Renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Eski canvas varsa temizle (HMR ve dev server desteği için)
+    while(container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
+    container.appendChild(renderer.domElement);
+
+    // Geometri - Dış Kafes İkosaedron
+    const outerGeometry = new THREE.IcosahedronGeometry(2.5, 1);
+    const outerMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0x3b82f6, // primary blue
+      metalness: 0.1,
+      roughness: 0.4,
+      transparent: true,
+      opacity: 0.6,
+      wireframe: true,
+      side: THREE.DoubleSide
+    });
+    const outerMesh = new THREE.Mesh(outerGeometry, outerMaterial);
+    scene.add(outerMesh);
+
+    // Geometri - İç Dolu İkosaedron
+    const innerGeometry = new THREE.IcosahedronGeometry(1.5, 0);
+    const innerMaterial = new THREE.MeshStandardMaterial({
+      color: 0x8b5cf6, // purple
+      flatShading: true,
+      roughness: 0.2,
+      metalness: 0.8
+    });
+    const innerMesh = new THREE.Mesh(innerGeometry, innerMaterial);
+    scene.add(innerMesh);
+
+    // Işıklandırma
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const directionalLight1 = new THREE.DirectionalLight(0x3b82f6, 3);
+    directionalLight1.position.set(5, 5, 5);
+    scene.add(directionalLight1);
+
+    const directionalLight2 = new THREE.DirectionalLight(0x8b5cf6, 3);
+    directionalLight2.position.set(-5, -5, -5);
+    scene.add(directionalLight2);
+    
+    // Arkadan zayıf ışık
+    const backLight = new THREE.PointLight(0xffffff, 1, 50);
+    backLight.position.set(0, 0, -5);
+    scene.add(backLight);
+
+    // Kamera Pozisyonu
+    camera.position.z = 6;
+
+    // Fare Etkileşimi Değişkenleri
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    const windowHalfX = window.innerWidth / 2;
+    const windowHalfY = window.innerHeight / 2;
+
+    const onDocumentMouseMove = (event: MouseEvent) => {
+      mouseX = (event.clientX - windowHalfX) * 0.001;
+      mouseY = (event.clientY - windowHalfY) * 0.001;
+    };
+
+    document.addEventListener('mousemove', onDocumentMouseMove);
+
+    // Animasyon Döngüsü
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
+
+      // Sönümlü (Damped) dönüş hareketleri
+      targetX = mouseX * 2;
+      targetY = mouseY * 2;
+
+      outerMesh.rotation.y += 0.05 * (targetX - outerMesh.rotation.y);
+      outerMesh.rotation.x += 0.05 * (targetY - outerMesh.rotation.x);
+      outerMesh.rotation.z += 0.002;
+
+      // İç mesh daha hızlı ve farklı döner
+      innerMesh.rotation.y += 0.05 * (targetX - innerMesh.rotation.y) + 0.005;
+      innerMesh.rotation.x += 0.05 * (targetY - innerMesh.rotation.x) - 0.005;
+
+      // Yüzen efekt
+      outerMesh.position.y = Math.sin(elapsedTime * 1.5) * 0.3;
+      innerMesh.position.y = Math.sin(elapsedTime * 1.5) * 0.3;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Pencere yeniden boyutlandırıldığında canvas'ı güncelle
+    const onWindowResize = () => {
+      if (!container) return;
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    };
+
+    window.addEventListener('resize', onWindowResize);
+    
+    // Astro ViewTransitions cleanup
+    document.addEventListener('astro:before-swap', () => {
+       document.removeEventListener('mousemove', onDocumentMouseMove);
+       window.removeEventListener('resize', onWindowResize);
+       // Dispose geometries & materials to avoid memory leaks
+       outerGeometry.dispose();
+       outerMaterial.dispose();
+       innerGeometry.dispose();
+       innerMaterial.dispose();
+       renderer.dispose();
+    }, { once: true });
+  }
+
+  // İlk yüklemede başlat
+  initThree();
+  // ViewTransitions sonrası başlat
+  document.addEventListener('astro:page-load', initThree);
+</script>

@@ -130,6 +130,7 @@ const languages = [
                 </svg>
               </button>
               <div
+                id="language-menu"
                 class="absolute right-0 mt-2 w-48 py-2 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 hidden group-hover:block transform transition-all duration-300 origin-top-right z-50"
               >
                 {languages.map(l => (
@@ -220,13 +221,13 @@ const languages = [
           <span class="group-hover:translate-x-1 transition-transform duration-300">Tema Değiştir</span>
         </button>
 
-        <button
-          id="mobile-language-toggle"
+        <a
+          href={languages.find(l => l.code !== lang)?.href || '#'}
           class="flex items-center gap-2 w-full px-4 py-3 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all duration-300 group"
         >
-          <span class="text-lg transform group-hover:scale-110 transition-transform duration-300">🇹🇷</span>
-          <span class="group-hover:translate-x-1 transition-transform duration-300">Dil Seç</span>
-        </button>
+          <span class="text-lg transform group-hover:scale-110 transition-transform duration-300">{languages.find(l => l.code !== lang)?.flag}</span>
+          <span class="group-hover:translate-x-1 transition-transform duration-300">{languages.find(l => l.code !== lang)?.name}</span>
+        </a>
       </div>
 
 
@@ -433,7 +434,6 @@ const languages = [
   // Dil seçici
   const languageSelector = document.getElementById('language-selector');
   const languageMenu = document.getElementById('language-menu');
-  const mobileLanguageToggle = document.getElementById('mobile-language-toggle');
 
   languageSelector?.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -442,21 +442,6 @@ const languages = [
 
   document.addEventListener('click', () => {
     languageMenu?.classList.add('hidden');
-  });
-
-  const languageButtons = document.querySelectorAll('[data-lang]');
-  languageButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      const lang = (e.currentTarget as HTMLElement).dataset.lang;
-      // Dil değiştirme işlemleri burada yapılacak
-      console.log('Selected language:', lang);
-      languageMenu?.classList.add('hidden');
-    });
-  });
-
-  mobileLanguageToggle?.addEventListener('click', () => {
-    // Mobil dil seçici için modal veya sayfa yönlendirmesi
-    console.log('Mobile language selector clicked');
   });
 </script>
  

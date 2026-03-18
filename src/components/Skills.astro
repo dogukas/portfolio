@@ -87,45 +87,31 @@ const { skillsCategories: categories, softSkills } = data[lang];
           <h3 class="text-2xl font-bold mb-8 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
             Soft Skills
           </h3>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {softSkills.map((skill) => (
-              <div class="relative group/soft">
-                <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg opacity-0 group-hover/soft:opacity-100 transition-opacity duration-300"></div>
-                <div class="relative p-4 text-center">
-                  <div class="text-3xl mb-2 transform group-hover/soft:scale-125 transition-transform duration-300">
-                    {skill.icon}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {softSkills.map((skill: any) => {
+              const defaultDesc = `Kritik senaryolarda ${skill.name} yetkinliğim ile engelleri aşar, projeyi ekibimle beraber başarıya ulaştırırım.`;
+              return (
+              <div class="group/card relative h-48 [perspective:1000px]">
+                <div class="absolute inset-0 transition-all duration-500 [transform-style:preserve-3d] group-hover/card:[transform:rotateY(180deg)]">
+                  <!-- Front of Card -->
+                  <div class="absolute inset-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl p-6 ring-1 ring-gray-200/50 dark:ring-gray-700/50 flex flex-col items-center justify-center [backface-visibility:hidden] shadow-sm">
+                    <div class="text-4xl mb-4 transform group-hover/card:scale-110 transition-transform">{skill.icon}</div>
+                    <h4 class="font-bold text-gray-900 dark:text-gray-100 text-lg mb-3">{skill.name}</h4>
+                    <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
+                       <div class="bg-primary h-1.5 rounded-full" style={`width: ${skill.value}%`}></div>
+                    </div>
                   </div>
-                  <h4 class="font-medium text-gray-700 dark:text-gray-300 mb-2">{skill.name}</h4>
-                  <div class="w-16 h-16 mx-auto relative">
-                    <svg class="w-full h-full transform -rotate-90">
-                      <circle
-                        class="text-gray-200 dark:text-gray-700"
-                        stroke-width="8"
-                        stroke="currentColor"
-                        fill="transparent"
-                        r="26"
-                        cx="32"
-                        cy="32"
-                      />
-                      <circle
-                        class="text-primary"
-                        stroke-width="8"
-                        stroke-linecap="round"
-                        stroke="currentColor"
-                        fill="transparent"
-                        r="26"
-                        cx="32"
-                        cy="32"
-                        style={`stroke-dasharray: ${2 * Math.PI * 26}; stroke-dashoffset: ${2 * Math.PI * 26 * (1 - skill.value / 100)}`}
-                      />
-                    </svg>
-                    <span class="absolute inset-0 flex items-center justify-center text-sm font-medium text-primary">
-                      {skill.value}%
-                    </span>
+                  
+                  <!-- Back of Card -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-primary to-primary-dark rounded-xl p-6 flex flex-col items-center justify-center text-center [transform:rotateY(180deg)] [backface-visibility:hidden] shadow-xl">
+                    <span class="text-white/90 text-sm italic leading-relaxed">"{skill.description || defaultDesc}"</span>
+                    <div class="mt-4 px-3 py-1 bg-white/20 rounded-full text-white text-xs font-bold font-mono border border-white/30">
+                      Özgüven: {skill.value}%
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </div>

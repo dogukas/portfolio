@@ -1,17 +1,27 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Navbar from '../../components/Navbar.astro';
-import BlogCard from '../../components/BlogCard.astro';
-import Contact from '../../components/Contact.astro';
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.astro';
+import BlogCard from '../../../components/BlogCard.astro';
+import Contact from '../../../components/Contact.astro';
 import { getCollection } from 'astro:content';
+import { useTranslations } from '../../../i18n/utils';
+import { languages } from '../../../i18n/ui';
+
+export function getStaticPaths() {
+  return Object.keys(languages).map((lang) => {
+    return { params: { lang } };
+  });
+}
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
+
+const { lang } = Astro.params;
+const t = useTranslations(lang as any);
 ---
 
-<Layout title="Blog | DGKNSGR" description="Yazılım, teknoloji ve deneyimlerim üzerine blog yazıları.">
-<Layout title={`${t('blog.title')} - Dogukan Sagiroglu`}>
+<Layout title={`${t('blog.title')} - Dogukan Sagiroglu`} description="Yazılım, teknoloji ve deneyimlerim üzerine blog yazıları." lang={lang}>
   <div class="pt-24 pb-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
     <div class="container mx-auto px-4">
       <!-- Header -->

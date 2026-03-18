@@ -3,8 +3,10 @@ import { ViewTransitions } from 'astro:transitions';
 import '../styles/global.css';
 import 'aos/dist/aos.css';
 import Loading from '../components/Loading.astro';
-
 import KonamiCode from '../components/KonamiCode.astro';
+import CustomCursor from '../components/CustomCursor.astro';
+import SpotifyWidget from '../components/SpotifyWidget.astro';
+import WelcomePopup from '../components/WelcomePopup.astro';
 
 interface Props {
 	title: string;
@@ -43,8 +45,11 @@ const {
 		</script>
 	</head>
 	<body class="min-h-screen bg-white dark:bg-dark-bg text-gray-900 dark:text-gray-100">
+		<CustomCursor />
 		<Loading />
 		<KonamiCode />
+		<WelcomePopup />
+		<SpotifyWidget />
 		<slot />
 		<script>
 			import AOS from 'aos';

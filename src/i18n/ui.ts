@@ -75,6 +75,7 @@ export const ui = {
         'loading': 'Yükleniyor',
 
         'nav.home': 'Ana Sayfa',
+        'blog.back': 'Blog\'a Dön',
 
         'contact.title': 'İletişime Geç',
         'contact.desc': 'Projeleriniz için benimle iletişime geçebilirsiniz.',

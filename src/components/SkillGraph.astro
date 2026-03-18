@@ -8,252 +8,137 @@ const t = useTranslations(lang);
   <div class="absolute top-4 left-4 z-10 bg-white/80 dark:bg-gray-900/80 px-3 py-1 rounded-lg text-xs font-mono border border-gray-200 dark:border-gray-700">
     {t('skills.graph_help')}
   </div>
-  <canvas id="skill-graph-canvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+  <div id="sphere-container" class="w-full h-full relative cursor-grab active:cursor-grabbing overflow-hidden perspective-1000">
+    <!-- 3D Elements injected via JS -->
+  </div>
 </div>
 
 <script>
-  // Simple Force-Directed Graph Implementation in Vanilla JS
-  const canvas = document.getElementById('skill-graph-canvas') as HTMLCanvasElement;
-  const container = canvas?.parentElement;
+  // 3D Skill Sphere (Tag Cloud) Implementation using Fibonacci Sphere algorithm
+  function initSkillSphere() {
+    const container = document.getElementById('sphere-container');
+    if (!container) return;
 
-  if (canvas && container) {
-    const ctx = canvas.getContext('2d');
-    
-    // Skills Data
-    const nodes = [
-      // Frontend
-      { id: 'Frontend', group: 1, radius: 25 },
-      { id: 'React', group: 2, radius: 18 },
-      { id: 'Vue', group: 2, radius: 18 },
-      { id: 'Astro', group: 2, radius: 18 },
-      { id: 'Tailwind', group: 2, radius: 15 },
-      { id: 'TypeScript', group: 2, radius: 15 },
-      // Backend
-      { id: 'Backend', group: 3, radius: 25 },
-      { id: 'Node.js', group: 4, radius: 18 },
-      { id: 'Python', group: 4, radius: 18 },
-      { id: 'PostgreSQL', group: 4, radius: 15 },
-      { id: 'MongoDB', group: 4, radius: 15 },
-      // DevOps
-      { id: 'DevOps', group: 5, radius: 25 },
-      { id: 'Docker', group: 6, radius: 18 },
-      { id: 'AWS', group: 6, radius: 18 },
-      { id: 'Linux', group: 6, radius: 15 }
+    // Remove any existing children (for HMR / View Transitions)
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+
+    const skills = [
+      'React', 'Vue', 'Astro', 'TypeScript', 'Tailwind', 'JavaScript', 'HTML5', 'CSS3',
+      'Node.js', 'Python', 'PostgreSQL', 'MongoDB', 'Docker', 'AWS', 'Linux',
+      'Git', 'GraphQL', 'Next.js', 'Redis', 'Figma', 'Jest', 'Redux', 'Express'
     ];
 
-    const links = [
-      { source: 'Frontend', target: 'React' },
-      { source: 'Frontend', target: 'Vue' },
-      { source: 'Frontend', target: 'Astro' },
-      { source: 'Frontend', target: 'Tailwind' },
-      { source: 'Frontend', target: 'TypeScript' },
-      
-      { source: 'Backend', target: 'Node.js' },
-      { source: 'Backend', target: 'Python' },
-      { source: 'Backend', target: 'PostgreSQL' },
-      { source: 'Backend', target: 'MongoDB' },
-      
-      { source: 'DevOps', target: 'Docker' },
-      { source: 'DevOps', target: 'AWS' },
-      { source: 'DevOps', target: 'Linux' },
-
-      // Cross links
-      { source: 'React', target: 'TypeScript' },
-      { source: 'Node.js', target: 'TypeScript' },
-      { source: 'Node.js', target: 'MongoDB' },
-      { source: 'Node.js', target: 'Docker' },
-      { source: 'Python', target: 'Linux' }
-    ];
-
-    // Colors
-    const colors: Record<number, string> = {
-      1: '#3b82f6', // Blue
-      2: '#60a5fa', // Light Blue
-      3: '#10b981', // Green
-      4: '#34d399', // Light Green
-      5: '#8b5cf6', // Purple
-      6: '#a78bfa'  // Light Purple
-    };
-
-    // Physics State
-    let width = container.clientWidth;
-    let height = container.clientHeight;
+    const radius = container.clientWidth < 500 ? 120 : 180;
+    const elements: HTMLElement[] = [];
     
-    // Initialize positions randomly near center
-    nodes.forEach(node => {
-        (node as any).x = width / 2 + (Math.random() - 0.5) * 50;
-        (node as any).y = height / 2 + (Math.random() - 0.5) * 50;
-        (node as any).vx = 0;
-        (node as any).vy = 0;
+    // Create the 3D sphere wrapper
+    const sphere = document.createElement('div');
+    sphere.style.position = 'absolute';
+    sphere.style.top = '50%';
+    sphere.style.left = '50%';
+    sphere.style.width = '0';
+    sphere.style.height = '0';
+    sphere.style.transformStyle = 'preserve-3d';
+    container.appendChild(sphere);
+
+    // Fibonacci sphere distribution
+    const phi = Math.PI * (3 - Math.sqrt(5));
+    
+    skills.forEach((skill, i) => {
+      const el = document.createElement('div');
+      el.textContent = skill;
+      // Styling the tags
+      el.className = 'absolute px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full text-sm font-semibold border border-gray-200 dark:border-gray-700 shadow-sm hover:bg-primary hover:text-white dark:hover:bg-primary transition-colors cursor-pointer select-none whitespace-nowrap';
+      
+      // Calculate 3D position
+      const y = 1 - (i / (skills.length - 1)) * 2;
+      const radiusAtY = Math.sqrt(1 - y * y);
+      const theta = phi * i;
+
+      const x = Math.cos(theta) * radiusAtY;
+      const z = Math.sin(theta) * radiusAtY;
+
+      // Save base coordinates
+      (el as any).baseX = x * radius;
+      (el as any).baseY = y * radius;
+      (el as any).baseZ = z * radius;
+
+      // Apply initial transform centering the element relative to the sphere origin
+      el.style.transform = `translate3d(${(el as any).baseX}px, ${(el as any).baseY}px, ${(el as any).baseZ}px) translate(-50%, -50%)`;
+      
+      sphere.appendChild(el);
+      elements.push(el);
     });
 
-    // Simulation Parameters
-    const repulsion = 1000;
-    const springLength = 100;
-    const springStrength = 0.05;
-    const damping = 0.9;
-    const centerStrength = 0.01;
+    let targetRotationX = 0;
+    let targetRotationY = 0;
+    let mouseX = 0.003; // Default auto-rotate speed
+    let mouseY = 0.003;
 
-    let draggedNode: any = null;
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      
+      // Calculate rotation speed based on mouse distance from center
+      mouseX = x * 0.00005;
+      mouseY = y * 0.00005;
+    };
+
+    container.addEventListener('mousemove', onMouseMove);
+    container.addEventListener('mouseleave', () => {
+      mouseX = 0.003;
+      mouseY = 0.003;
+    });
+
+    // Touch support
+    container.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      const x = touch.clientX - rect.left - rect.width / 2;
+      const y = touch.clientY - rect.top - rect.height / 2;
+      mouseX = x * 0.0001;
+      mouseY = y * 0.0001;
+    }, { passive: false });
+
+    container.addEventListener('touchend', () => {
+      mouseX = 0.003;
+      mouseY = 0.003;
+    });
+
     let animationId: number;
+    const animate = () => {
+      targetRotationY += mouseX;
+      targetRotationX += mouseY;
 
-    const resize = () => {
-        width = container.clientWidth;
-        height = container.clientHeight;
-        canvas.width = width;
-        canvas.height = height;
-    };
-    window.addEventListener('resize', resize);
-    resize();
+      sphere.style.transform = `rotateX(${-targetRotationX}rad) rotateY(${targetRotationY}rad)`;
 
-    // Interaction
-    canvas.addEventListener('mousedown', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        // Find clicked node
-        for (const node of nodes) {
-            const dx = x - (node as any).x;
-            const dy = y - (node as any).y;
-            if (dx * dx + dy * dy < node.radius * node.radius) {
-                draggedNode = node;
-                break;
-            }
-        }
-    });
+      // Inverse rotation for the elements so text always faces the user
+      elements.forEach(el => {
+        el.style.transform = `translate3d(${(el as any).baseX}px, ${(el as any).baseY}px, ${(el as any).baseZ}px) translate(-50%, -50%) rotateY(${-targetRotationY}rad) rotateX(${targetRotationX}rad)`;
+      });
 
-    window.addEventListener('mousemove', (e) => {
-        if (draggedNode) {
-            const rect = canvas.getBoundingClientRect();
-            draggedNode.x = e.clientX - rect.left;
-            draggedNode.y = e.clientY - rect.top;
-            draggedNode.vx = 0;
-            draggedNode.vy = 0;
-        }
-    });
-
-    window.addEventListener('mouseup', () => {
-        draggedNode = null;
-    });
-
-    const update = () => {
-        // Link attraction
-        links.forEach(link => {
-            const source = nodes.find(n => n.id === link.source) as any;
-            const target = nodes.find(n => n.id === link.target) as any;
-            if (!source || !target) return;
-
-            const dx = target.x - source.x;
-            const dy = target.y - source.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance === 0) return;
-
-            const force = (distance - springLength) * springStrength;
-            const fx = (dx / distance) * force;
-            const fy = (dy / distance) * force;
-
-            if (source !== draggedNode) {
-                source.vx += fx;
-                source.vy += fy;
-            }
-            if (target !== draggedNode) {
-                target.vx -= fx;
-                target.vy -= fy;
-            }
-        });
-
-        // Node repulsion
-        nodes.forEach((node1: any, i) => {
-            nodes.forEach((node2: any, j) => {
-                if (i === j) return;
-                
-                const dx = node2.x - node1.x;
-                const dy = node2.y - node1.y;
-                let distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance === 0) {
-                    distance = 0.1; // Avoid division by zero
-                }
-
-                if (distance < 200) { // Only repel if close
-                    const force = repulsion / (distance * distance);
-                    const fx = (dx / distance) * force;
-                    const fy = (dy / distance) * force;
-
-                    if (node1 !== draggedNode) {
-                        node1.vx -= fx;
-                        node1.vy -= fy;
-                    }
-                    // Current loop handles both directions eventually
-                }
-            });
-            
-            // Center gravity
-            if (node1 !== draggedNode) {
-                node1.vx += (width / 2 - node1.x) * centerStrength;
-                node1.vy += (height / 2 - node1.y) * centerStrength;
-            }
-        });
-
-        // Apply Velocity
-        nodes.forEach((node: any) => {
-            if (node !== draggedNode) {
-                node.x += node.vx;
-                node.y += node.vy;
-                node.vx *= damping;
-                node.vy *= damping;
-            }
-        });
+      animationId = requestAnimationFrame(animate);
     };
 
-    const draw = () => {
-        if (!ctx) return;
-        ctx.clearRect(0, 0, width, height);
-        
-        // Draw Links
-        ctx.strokeStyle = localStorage.getItem('theme') === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
-        ctx.lineWidth = 1;
+    animate();
 
-        links.forEach(link => {
-            const source = nodes.find(n => n.id === link.source) as any;
-            const target = nodes.find(n => n.id === link.target) as any;
-            if (source && target) {
-                ctx.beginPath();
-                ctx.moveTo(source.x, source.y);
-                ctx.lineTo(target.x, target.y);
-                ctx.stroke();
-            }
-        });
-
-        // Draw Nodes
-        nodes.forEach((node: any) => {
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-            ctx.fillStyle = colors[node.group] || '#9ca3af';
-            ctx.fill();
-            
-            // Border
-            ctx.strokeStyle = localStorage.getItem('theme') === 'dark' ? '#1f2937' : '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Label
-            ctx.fillStyle = localStorage.getItem('theme') === 'dark' ? '#fff' : '#1f2937';
-            ctx.font = `500 ${node.radius > 20 ? '14px' : '12px'} Inter`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(node.id, node.x, node.y);
-        });
-    };
-
-    const loop = () => {
-        update();
-        draw();
-        animationId = requestAnimationFrame(loop);
-    };
-
-    loop();
+    // Cleanup for Astro ViewTransitions
+    document.addEventListener('astro:before-swap', () => {
+      cancelAnimationFrame(animationId);
+      container.removeEventListener('mousemove', onMouseMove);
+    }, { once: true });
   }
+
+  initSkillSphere();
+  document.addEventListener('astro:page-load', initSkillSphere);
 </script>
+
+<style>
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+</style>

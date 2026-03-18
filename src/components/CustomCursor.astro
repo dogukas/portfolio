@@ -1,0 +1,94 @@
+---
+// CustomCursor.astro
+// Sistem imlecini modern ve animasyonlu bir yuvarlağa çevirir.
+---
+
+<div id="custom-cursor" class="fixed w-5 h-5 bg-primary mix-blend-difference rounded-full pointer-events-none z-[9999] transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-200 ease-out hidden md:block"></div>
+
+<style is:global>
+  /* Mobilde özel imleç gereksiz, ekran genişliği 768px'den büyükse uygularız */
+  @media (min-width: 768px) {
+    body, a, button, input, textarea, select {
+      cursor: none !important;
+    }
+  }
+
+  .cursor-hover {
+    transform: translate(-50%, -50%) scale(2.5) !important;
+    background-color: rgba(139, 92, 246, 0.8) !important; /* purple hover tint */
+  }
+  
+  .cursor-active {
+    transform: translate(-50%, -50%) scale(0.8) !important;
+    opacity: 0.5;
+  }
+</style>
+
+<script>
+  function initCursor() {
+    const cursor = document.getElementById('custom-cursor');
+    
+    // Sadece fare desteği olan cihazlarda imleci çalıştır (Mobilde gizle)
+    if (cursor && window.matchMedia("(pointer: fine)").matches) {
+      
+      const onMouseMove = (e: MouseEvent) => {
+        requestAnimationFrame(() => {
+           cursor.style.left = `${e.clientX}px`;
+           cursor.style.top = `${e.clientY}px`;
+        });
+      };
+      
+      const onMouseDown = () => cursor.classList.add('cursor-active');
+      const onMouseUp = () => cursor.classList.remove('cursor-active');
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mousedown', onMouseDown);
+      document.addEventListener('mouseup', onMouseUp);
+
+      // Linkler ve butonlar üzerinde büyüme efekti
+      const updateInteractables = () => {
+        const interactables = document.querySelectorAll('a, button, input, textarea, select, [role="button"]');
+        interactables.forEach(el => {
+          el.addEventListener('mouseenter', () => cursor.classList.add('cursor-hover'));
+          el.addEventListener('mouseleave', () => cursor.classList.remove('cursor-hover'));
+        });
+      };
+      
+      updateInteractables();
+      
+      // DOM değişirse (örneğin view transitions) etkileşimleri tekrar bağla
+      const observer = new MutationObserver((mutations) => {
+        let shouldUpdate = false;
+        mutations.forEach((mutation) => {
+          if (mutation.addedNodes.length) {
+            shouldUpdate = true;
+          }
+        });
+        if (shouldUpdate) updateInteractables();
+      });
+      
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // Temizlik fonksiyonları (astro:before-swap için)
+      document.addEventListener('astro:before-swap', () => {
+         document.removeEventListener('mousemove', onMouseMove);
+         document.removeEventListener('mousedown', onMouseDown);
+         document.removeEventListener('mouseup', onMouseUp);
+         observer.disconnect();
+      }, { once: true });
+
+    } else {
+      if(cursor) {
+        cursor.style.display = 'none';
+      }
+      // Sistem imlecini geri yükle if mismatch
+      document.documentElement.style.setProperty('cursor', 'auto', 'important');
+    }
+  }
+
+  // İlk yükleme
+  initCursor();
+  
+  // Astro sayfa geçişleri sonrası tekrar başlat
+  document.addEventListener('astro:page-load', initCursor);
+</script>
